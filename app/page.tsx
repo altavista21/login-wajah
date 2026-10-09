@@ -14,6 +14,7 @@ export default function HomePage() {
   const [modelsReady, setModelsReady] = useState(false);
   const [cameraReady, setCameraReady] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [approvedToEnroll, setApprovedToEnroll] = useState(false);
   const [message, setMessage] = useState("Memuat model pengenalan wajah...");
   const [messageType, setMessageType] = useState<"normal" | "error" | "success">("normal");
 
@@ -91,9 +92,26 @@ export default function HomePage() {
         const credential = await signInWithPopup(firebaseAuth, provider);
         googleSignedIn = true;
         const idToken = await getIdToken(credential.user, true);
-        if (!credential.user.email) throw new Error("Akun Google tidak memiliki email.");
-        const descriptor = await captureDescriptor();
-        body = { descriptor, idToken };
+        const requestResponse = await fetch("/api/auth/request-access", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken }),
+        });
+        const access = await requestResponse.json().catch(() => ({}));
+        if (!requestResponse.ok) throw new Error(access.message || access.error || "Permintaan akses gagal.");
+        if (access.status !== "approved") {
+          setMessage(access.message || "Permintaan akses sedang diproses.");
+          setMessageType(access.status === "enrolled" ? "success" : "normal");
+          return;
+        }
+        if (!cameraReady) {
+          setApprovedToEnroll(true);
+          setMessage("Permintaan disetujui. Aktifkan kamera, lalu tekan tombol ini lagi untuk mendaftarkan wajah.");
+          setMessageType("success");
+          return;
+        }
+        setMessage("Akses disetujui. Memeriksa wajah...");
+        body = { descriptor: await captureDescriptor(), idToken };
       } else {
         body = { descriptor: await captureDescriptor() };
       }
@@ -109,8 +127,9 @@ export default function HomePage() {
         window.location.assign("/dashboard");
         return;
       }
-      setMessage("Pendaftaran wajah berhasil. Sekarang login dengan wajah terdaftar.");
+      setMessage("Pendaftaran wajah berhasil. Sekarang login menggunakan wajah terdaftar.");
       setMessageType("success");
+      setApprovedToEnroll(false);
       setMode("login");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Terjadi kesalahan.");
@@ -123,11 +142,14 @@ export default function HomePage() {
 
   function changeMode(next: Mode) {
     setMode(next);
+    setApprovedToEnroll(false);
     setMessage(next === "enroll"
-      ? "Gunakan akun Google yang emailnya cocok dengan ADMIN_EMAIL di konfigurasi server."
-      : "Arahkan wajah admin ke kamera.");
+      ? "Login dengan Google untuk mengajukan akses. Pendaftaran wajah hanya tersedia setelah disetujui admin utama."
+      : "Arahkan wajah admin yang sudah terdaftar ke kamera.");
     setMessageType("normal");
   }
+
+  const submitDisabled = !modelsReady || busy || (mode === "login" && !cameraReady) || (mode === "enroll" && approvedToEnroll && !cameraReady);
 
   return (
     <main className="shell">
@@ -141,11 +163,11 @@ export default function HomePage() {
         <p className="muted">Gunakan kamera perangkat untuk memverifikasi wajah admin yang sudah terdaftar.</p>
         <div className="tabs">
           <button className={mode === "login" ? "active" : ""} onClick={() => changeMode("login")}>Login</button>
-          <button className={mode === "enroll" ? "active" : ""} onClick={() => changeMode("enroll")}>Daftarkan wajah</button>
+          <button className={mode === "enroll" ? "active" : ""} onClick={() => changeMode("enroll")}>Ajukan akses admin</button>
         </div>
         {mode === "enroll" && (
           <div className="field">
-            <p className="muted">Pendaftaran pertama memerlukan login Google. Hanya Gmail yang cocok dengan ADMIN_EMAIL di server yang diizinkan.</p>
+            <p className="muted">Admin utama harus menyetujui permintaan sebelum wajah dapat didaftarkan. Gunakan akun Google dengan email terverifikasi.</p>
           </div>
         )}
         <div className="field">
@@ -162,11 +184,11 @@ export default function HomePage() {
           <button className="button secondary" onClick={startCamera} disabled={!modelsReady || busy}>Aktifkan kamera</button>
           <button className="button secondary" onClick={stopCamera} disabled={!cameraReady || busy}>Matikan kamera</button>
         </div>
-        <button className="button full" onClick={submit} disabled={!modelsReady || !cameraReady || busy}>
-          {busy ? "Memproses..." : mode === "enroll" ? "Masuk dengan Google & daftarkan wajah" : "Login dengan wajah"}
+        <button className="button full" onClick={submit} disabled={submitDisabled}>
+          {busy ? "Memproses..." : mode === "enroll" ? approvedToEnroll ? "Daftarkan wajah (disetujui)" : "Masuk Google & ajukan akses" : "Login dengan wajah"}
         </button>
         <div className={`notice ${messageType === "error" ? "error" : messageType === "success" ? "success" : ""}`} role="status">{message}</div>
-        <p className="small">Pendaftaran hanya dapat dilakukan sekali. Kamera membutuhkan izin browser dan HTTPS. Pengenalan wajah ini belum memiliki pemeriksaan liveness.</p>
+        <p className="small">Pendaftaran wajah hanya tersedia setelah disetujui admin utama. Pengenalan wajah ini belum memiliki pemeriksaan liveness.</p>
         <div className="footer">Sesi admin berakhir setelah 20 menit tanpa aktivitas.</div>
       </section>
     </main>
