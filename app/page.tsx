@@ -2,7 +2,7 @@
 import * as faceapi from "face-api.js";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getIdToken, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import { firebaseAuth } from "@/lib/firebase-client";
+import { getFirebaseAuth } from "@/lib/firebase-client";
 
 type Mode = "login" | "enroll";
 
@@ -89,7 +89,8 @@ export default function HomePage() {
       if (mode === "enroll") {
         const provider = new GoogleAuthProvider();
         provider.setCustomParameters({ prompt: "select_account" });
-        const credential = await signInWithPopup(firebaseAuth, provider);
+        const auth = getFirebaseAuth();
+        const credential = await signInWithPopup(auth, provider);
         googleSignedIn = true;
         const idToken = await getIdToken(credential.user, true);
         const requestResponse = await fetch("/api/auth/request-access", {
@@ -135,7 +136,7 @@ export default function HomePage() {
       setMessage(error instanceof Error ? error.message : "Terjadi kesalahan.");
       setMessageType("error");
     } finally {
-      if (googleSignedIn) await signOut(firebaseAuth).catch(() => undefined);
+      if (googleSignedIn) await signOut(getFirebaseAuth()).catch(() => undefined);
       setBusy(false);
     }
   }
