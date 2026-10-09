@@ -41,3 +41,29 @@ Aplikasi ini menggunakan informasi wajah untuk proses verifikasi akses admin. Pe
 
 Pengenalan wajah saja tidak menjamin perlindungan terhadap foto, video, atau upaya pemalsuan lainnya. Untuk sistem yang menangani data atau tindakan berisiko tinggi, gunakan perlindungan tambahan dan jangan mengandalkan login wajah sebagai satu-satunya faktor keamanan.
 
+## Integrasi API eksternal
+
+API key yang dibuat melalui dashboard dapat digunakan untuk mengautentikasi permintaan ke endpoint yang mendukung API key.
+
+### Endpoint verifikasi
+
+- **Method:** `GET`
+- **URL:** `/api/v1/me`
+- **Header:** `Authorization: Bearer <API_KEY>`
+
+Contoh menggunakan cURL:
+
+```bash
+curl -i "https://login-wajah.vercel.app/api/v1/me" \
+  -H "Authorization: Bearer GANTI_DENGAN_API_KEY"
+```
+
+Jika key valid dan masih aktif, respons berisi `ok: true`, UID pemilik key, awalan key, dan waktu respons. Endpoint ini merupakan endpoint uji autentikasi, bukan endpoint untuk mengelola data lain.
+
+### Respons kegagalan
+
+- `401 Unauthorized`: header tidak ada, key salah, atau key tidak aktif.
+- `503 Service Unavailable`: layanan penyimpanan/autentikasi sedang tidak tersedia.
+
+Kirim key melalui header HTTPS `Authorization`, bukan query string atau URL. Jangan menaruh key di kode browser, aplikasi publik, repositori, log, atau tangkapan layar. Simpan di konfigurasi rahasia sisi server layanan yang melakukan integrasi.
+
