@@ -1,0 +1,7 @@
+import { NextRequest,NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
+import { adminDb } from "@/lib/firebase-admin";
+import { isValidDescriptor } from "@/lib/face";
+export const runtime="nodejs";
+function tokenMatches(received:unknown,expected:string|undefined){if(typeof received!=="string"||!expected)return false;const a=Buffer.from(received),b=Buffer.from(expected);return a.length===b.length&&timingSafeEqual(a,b);}
+export async function POST(request:NextRequest){try{const body=await request.json();if(!tokenMatches(body?.setupToken,process.env.ADMIN_SETUP_TOKEN))return NextResponse.json({error:"Token pendaftaran tidak valid."},{status:401});if(!isValidDescriptor(body?.descriptor))return NextResponse.json({error:"Data wajah tidak valid."},{status:400});const ref=adminDb().collection("adminFaceProfiles").doc("admin");const created=await adminDb().runTransaction(async tx=>{const snap=await tx.get(ref);if(snap.exists)return false;tx.create(ref,{descriptor:body.descriptor,createdAt:new Date().toISOString(),version:1});return true;});if(!created)return NextResponse.json({error:"Wajah admin sudah terdaftar. Pendaftaran ulang tidak diizinkan."},{status:409});return NextResponse.json({ok:true});}catch(error){console.error("Admin face enrollment failed:",error instanceof Error?error.message:"unknown");return NextResponse.json({error:"Pendaftaran gagal. Periksa konfigurasi Firebase Admin."},{status:500});}}
