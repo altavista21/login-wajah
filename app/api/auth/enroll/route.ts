@@ -1,7 +1,60 @@
-import { NextRequest,NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "firebase-admin/auth";
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb, getAdminApp } from "@/lib/firebase-admin";
 import { isValidDescriptor } from "@/lib/face";
-import { getAdminApp } from "@/lib/firebase-admin";
-export const runtime="nodejs";
-export async function POST(request:NextRequest){try{const body=await request.json();const idToken=body?.idToken;if(typeof idToken!=="string"||!idToken)return NextResponse.json({error:"Login akun admin Firebase diperlukan."},{status:401});const decoded=await getAuth(getAdminApp()).verifyIdToken(idToken);const allowedEmail=process.env.ADMIN_EMAIL?.trim().toLowerCase();if(!allowedEmail||typeof decoded.email!=="string"||decoded.email.toLowerCase()!==allowedEmail)return NextResponse.json({error:"Akun Firebase ini tidak diizinkan mendaftarkan admin."},{status:403});if(!isValidDescriptor(body?.descriptor))return NextResponse.json({error:"Data wajah tidak valid."},{status:400});const db=adminDb(),ref=db.collection("adminFaceProfiles").doc("admin");const created=await db.runTransaction(async tx=>{const snap=await tx.get(ref);if(snap.exists)return false;tx.create(ref,{descriptor:body.descriptor,createdAt:new Date().toISOString(),version:1,registeredBy:decoded.uid,registeredEmail:allowedEmail});return true;});if(!created)return NextResponse.json({error:"Wajah admin sudah terdaftar. Pendaftaran ulang tidak diizinkan."},{status:409});return NextResponse.json({ok:true});}catch(error){console.error("Admin face enrollment failed:",error instanceof Error?error.message:"unknown");return NextResponse.json({error:"Pendaftaran gagal. Periksa login Firebase dan konfigurasi server."},{status:500});}}
+
+export const runtime = "nodejs";
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const idToken = body?.idToken;
+    if (typeof idToken !== "string" || !idToken) {
+      return NextResponse.json({ error: "Login dengan Google diperlukan." }, { status: 401 });
+    }
+
+    const decoded = await getAuth(getAdminApp()).verifyIdToken(idToken);
+    const allowedEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+    if (
+      !allowedEmail ||
+      typeof decoded.email !== "string" ||
+      decoded.email.toLowerCase() !== allowedEmail ||
+      decoded.email_verified !== true
+    ) {
+      return NextResponse.json(
+        { error: "Akun Google terverifikasi ini tidak diizinkan mendaftarkan admin." },
+        { status: 403 },
+      );
+    }
+
+    if (!isValidDescriptor(body?.descriptor)) {
+      return NextResponse.json({ error: "Data wajah tidak valid." }, { status: 400 });
+    }
+
+    const db = adminDb();
+    const ref = db.collection("adminFaceProfiles").doc("admin");
+    const created = await db.runTransaction(async (transaction) => {
+      const snapshot = await transaction.get(ref);
+      if (snapshot.exists) return false;
+      transaction.create(ref, {
+        descriptor: body.descriptor,
+        createdAt: new Date().toISOString(),
+        version: 1,
+        registeredBy: decoded.uid,
+        registeredEmail: allowedEmail,
+      });
+      return true;
+    });
+
+    if (!created) {
+      return NextResponse.json({ error: "Wajah admin sudah terdaftar. Pendaftaran ulang tidak diizinkan." }, { status: 409 });
+    }
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Admin face enrollment failed:", error instanceof Error ? error.message : "unknown");
+    return NextResponse.json(
+      { error: "Pendaftaran gagal. Periksa login Google dan konfigurasi server." },
+      { status: 500 },
+    );
+  }
+}
