@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 type AccessRequest = { uid: string; email: string; status: string; requestedAt: string };
@@ -86,6 +87,7 @@ export default function DashboardClient({ primary }: { primary: boolean }) {
   return (
     <main className="shell">
       <section className="panel dashboard">
+        <Link href="/dashboard/api-key" className="api-key-link">Generate API Key</Link>
         <div className="success-icon" aria-hidden="true">✓</div>
         <div className="eyebrow">AUTENTIKASI BERHASIL</div>
         <h1>LOGIN BERHASIL</h1>
