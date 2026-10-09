@@ -1,53 +1,43 @@
-# Login Wajah Admin
+# Login Wajah
 
-Aplikasi Next.js untuk autentikasi admin menggunakan pengenalan wajah, Firebase Authentication Google, Firestore, serta cookie sesi `HttpOnly`. Mendukung admin utama dan admin tambahan yang wajib mendapat persetujuan.
+Login Wajah adalah halaman akses khusus admin yang memungkinkan pengguna masuk ke dashboard menggunakan pengenalan wajah. Akses admin baru harus mendapat persetujuan dari admin utama sebelum dapat mendaftarkan wajah dan menggunakan fitur login wajah.
 
-## Alur admin
+## Fungsi utama
 
-1. Admin utama masuk menggunakan wajah yang sudah terdaftar.
-2. Calon admin memilih **Ajukan akses admin** lalu login dengan Google.
-3. Permintaan disimpan dengan status `pending`; calon admin belum dapat mendaftarkan wajah.
-4. Admin utama membuka dashboard dan menyetujui atau menolak permintaan.
-5. Setelah disetujui, calon admin login Google kembali dan mendaftarkan wajahnya.
-6. Login wajah hanya berhasil untuk profil admin yang aktif. Admin tambahan tidak dapat menyetujui permintaan admin lain.
+- **Login menggunakan wajah:** admin yang sudah terdaftar dapat mengakses dashboard melalui pemeriksaan wajah.
+- **Pengajuan akses admin:** calon admin dapat mengajukan akses menggunakan akun Google.
+- **Persetujuan admin utama:** admin utama dapat meninjau, menyetujui, atau menolak permintaan akses.
+- **Pendaftaran wajah setelah disetujui:** calon admin hanya dapat mendaftarkan wajah setelah permintaannya disetujui.
+- **Pembatasan akses:** hanya admin yang terdaftar dan memiliki akses aktif yang dapat masuk ke dashboard.
+- **Pengelolaan sesi:** sesi login memiliki batas waktu dan dapat diakhiri dengan keluar dari aplikasi.
 
-Profil admin utama lama tetap berada di `adminFaceProfiles/admin`. Profil admin tambahan disimpan berdasarkan Firebase UID di `adminFaceProfiles/{uid}`; permintaan akses ada di `adminAccessRequests/{uid}`.
+## Cara menggunakan
 
-## Jalankan lokal
+### Admin yang sudah terdaftar
 
-1. Gunakan Node.js 20 atau LTS yang kompatibel dengan Next.js 15.
-2. Isi kredensial Firebase Admin, `SESSION_SECRET` acak minimal 32 karakter, `ADMIN_EMAIL`, dan konfigurasi Firebase Web App di environment variables.
-3. Di Firebase Console, buka Authentication → Sign-in method → Google, aktifkan provider Google, lalu pilih support email.
-4. Di Authentication → Settings → Authorized domains, pastikan domain aplikasi (termasuk domain Vercel) diizinkan.
-5. Daftarkan Web App di Project settings → General → Your apps jika belum ada, lalu ambil apiKey, authDomain, projectId, dan appId untuk variabel `NEXT_PUBLIC_FIREBASE_*`.
-6. Jalankan `npm install`, lalu `npm run download:models` dan `npm run dev`.
-7. Admin utama login dengan wajah yang sudah terdaftar. Admin baru mengajukan akses menggunakan Google, menunggu persetujuan di dashboard admin utama, lalu mendaftarkan wajah.
+1. Buka halaman Login Wajah.
+2. Ikuti petunjuk untuk mengaktifkan kamera dan melakukan pemeriksaan wajah.
+3. Jika wajah cocok dengan profil admin aktif, akses ke dashboard akan diberikan.
 
-## Environment variables
+### Calon admin
 
-- `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`: Firebase Admin SDK server credentials.
-- `SESSION_SECRET`: rahasia JWT sesi, minimal 32 karakter acak.
-- `ADMIN_EMAIL`: email Google terverifikasi milik admin utama.
-- `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`: konfigurasi Firebase Web App. Ini konfigurasi client, bukan service-account private key.
+1. Pilih opsi untuk mengajukan akses admin.
+2. Masuk menggunakan akun Google yang diminta aplikasi.
+3. Tunggu admin utama meninjau permintaan.
+4. Jika disetujui, ikuti petunjuk untuk mendaftarkan wajah.
+5. Setelah pendaftaran selesai, gunakan login wajah untuk mengakses aplikasi.
 
-Jangan commit service account atau private key ke GitHub. Simpan rahasia server di environment variables hosting.
+### Admin utama
 
-## Endpoint API
+1. Masuk menggunakan profil admin utama yang sudah terdaftar.
+2. Buka dashboard dan periksa daftar permintaan akses admin.
+3. Setujui atau tolak setiap permintaan berdasarkan kebutuhan akses.
 
-- `POST /api/auth/request-access`: memverifikasi ID token Google dan membuat/memeriksa permintaan akses.
-- `POST /api/auth/enroll`: hanya mendaftarkan wajah untuk permintaan yang sudah disetujui.
-- `POST /api/auth/login`: mencocokkan wajah admin utama atau admin tambahan yang sudah terdaftar.
-- `GET /api/admin/requests`: daftar permintaan, khusus admin utama.
-- `POST /api/admin/requests`: menyetujui atau menolak permintaan, khusus admin utama.
-- `POST /api/auth/activity`: memperpanjang sesi yang masih aktif.
-- `POST /api/auth/logout`: menghapus cookie sesi.
+Admin tambahan tidak memiliki kewenangan untuk menyetujui permintaan admin lain.
 
-## Sesi dan keamanan
+## Privasi dan keamanan
 
-Cookie sesi memakai `HttpOnly`, `SameSite=Strict`, `Secure` saat production, dan masa berlaku 20 menit. Dashboard dan endpoint persetujuan memverifikasi sesi di server. Status admin tambahan diperiksa lagi saat sesi diperpanjang.
+Aplikasi ini menggunakan informasi wajah untuk proses verifikasi akses admin. Perlakukan informasi biometrik sebagai data sensitif dan jangan membagikan akses akun kepada orang lain.
 
-**Batas keamanan penting:** pencocokan descriptor bukan bukti liveness. Foto, video, atau request API yang dipalsukan dapat melewati sistem tanpa pemeriksaan liveness kuat. Jangan gunakan prototipe ini sebagai satu-satunya autentikasi untuk sistem sensitif; tambahkan liveness detection dan faktor kedua.
+Pengenalan wajah saja tidak menjamin perlindungan terhadap foto, video, atau upaya pemalsuan lainnya. Untuk sistem yang menangani data atau tindakan berisiko tinggi, gunakan perlindungan tambahan dan jangan mengandalkan login wajah sebagai satu-satunya faktor keamanan.
 
-## Model face-api.js
-
-Build mengunduh model Tiny Face Detector, Face Landmark 68, dan Face Recognition ke `public/models/`, yang dilayani pada URL `/models`. Tinjau lisensi dan ketersediaan upstream sebelum deployment.
