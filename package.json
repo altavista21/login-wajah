@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "face-api.js": "0.22.2",
+    "firebase": "^11.10.0",
     "firebase-admin": "^13.5.0",
     "jose": "^6.1.0",
     "next": "15.5.27",
