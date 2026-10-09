@@ -39,7 +39,7 @@ export async function isSessionActive(session: AdminSession) {
     db.collection("adminFaceProfiles").doc(session.uid).get(),
     db.collection("adminAccessRequests").doc(session.uid).get(),
   ]);
-  return profile.exists && request.data()?.status === "approved";
+  return profile.exists && (request.data()?.status === "approved" || request.data()?.status === "enrolled");
 }
 
 export async function getAdminSession(): Promise<AdminSession | null> {
