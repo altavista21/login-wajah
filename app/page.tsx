@@ -185,7 +185,7 @@ export default function HomePage() {
           <button className="button secondary" onClick={stopCamera} disabled={!cameraReady || busy}>Matikan kamera</button>
         </div>
         <button className="button full" onClick={submit} disabled={submitDisabled}>
-          {busy ? "Memproses..." : mode === "enroll" ? approvedToEnroll ? "Daftarkan wajah (disetujui)" : "Daftar dengan Google" : "Booking dengan wajah"}
+          {busy ? "Memproses..." : mode === "enroll" ? approvedToEnroll ? "Daftarkan wajah (disetujui)" : "Daftar dengan wajah" : "Booking dengan wajah"}
         </button>
         <div className={`notice ${messageType === "error" ? "error" : messageType === "success" ? "success" : ""}`} role="status">{message}</div>
         <div className="footer">Sesi admin berakhir setelah 20 menit tanpa aktivitas.</div>
