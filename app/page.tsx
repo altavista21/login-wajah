@@ -146,7 +146,7 @@ export default function HomePage() {
     setApprovedToEnroll(false);
     setMessage(next === "enroll"
       ? ""
-      : "Arahkan wajah admin yang sudah terdaftar ke kamera.");
+      : "Arahkan wajah Anda yang sudah terdaftar ke kamera.");
     setMessageType("normal");
   }
 
