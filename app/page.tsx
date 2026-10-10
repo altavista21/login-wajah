@@ -145,7 +145,7 @@ export default function HomePage() {
     setMode(next);
     setApprovedToEnroll(false);
     setMessage(next === "enroll"
-      ? "Pendaftaran wajah hanya tersedia setelah disetujui admin utama. Bila mengalami kendala hubungi 0812345678910."
+      ? ""
       : "Arahkan wajah admin yang sudah terdaftar ke kamera.");
     setMessageType("normal");
   }
@@ -167,7 +167,7 @@ export default function HomePage() {
         </div>
         {mode === "enroll" && (
           <div className="field">
-            <p className="muted">Pendaftaran wajah hanya tersedia setelah disetujui admin utama. Bila mengalami kendala hubungi 0812345678910.</p>
+            <p className="muted"></p>
           </div>
         )}
         <div className="field">
