@@ -25,18 +25,23 @@ export async function POST(request: NextRequest) {
 
     const ref = db.collection("adminAccessRequests").doc(decoded.uid);
     const current = await ref.get();
-    if (current.data()?.email?.toLowerCase() !== email) {
-      await ref.set({ uid: decoded.uid, email, status: "pending", requestedAt: new Date().toISOString() });
-      return NextResponse.json({ status: "pending", message: "Permintaan akses dikirim. Tunggu persetujuan admin utama." });
+    if (current.data()?.status === "enrolled") {
+      return NextResponse.json({ status: "enrolled", message: "Akun ini sudah terdaftar sebagai admin." });
     }
-    const status = current.data()?.status;
-    if (status === "rejected") {
-      return NextResponse.json({ status: "rejected", message: "Permintaan akses ditolak admin utama." }, { status: 403 });
-    }
-    if (status === "pending") return NextResponse.json({ status, message: "Permintaan masih menunggu persetujuan admin utama." });
-    if (status === "approved") return NextResponse.json({ status, message: "Akses disetujui. Kamera akan digunakan untuk mendaftarkan wajah." });
-    if (status === "enrolled") return NextResponse.json({ status, message: "Akun ini sudah terdaftar sebagai admin." });
-    return NextResponse.json({ status: "pending", message: "Permintaan akses sedang diproses." });
+
+    await ref.set({
+      uid: decoded.uid,
+      email,
+      status: "approved",
+      requestedAt: current.data()?.requestedAt || new Date().toISOString(),
+      approvedAt: new Date().toISOString(),
+      approvalMethod: "automatic",
+    }, { merge: true });
+
+    return NextResponse.json({
+      status: "approved",
+      message: "Akses disetujui otomatis. Aktifkan kamera untuk mendaftarkan wajah.",
+    });
   } catch (error) {
     console.error("Admin access request failed:", error instanceof Error ? error.message : "unknown");
     return NextResponse.json({ error: "Tidak dapat mengirim permintaan akses." }, { status: 500 });
