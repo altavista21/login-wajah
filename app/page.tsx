@@ -145,7 +145,7 @@ export default function HomePage() {
     setMode(next);
     setApprovedToEnroll(false);
     setMessage(next === "enroll"
-      ? "Login dengan Google untuk mengajukan akses. Pendaftaran wajah hanya tersedia setelah disetujui admin utama."
+      ? "Pendaftaran wajah hanya tersedia setelah disetujui admin utama. Bila mengalami kendala hubungi 0812345678910."
       : "Arahkan wajah admin yang sudah terdaftar ke kamera.");
     setMessageType("normal");
   }
@@ -156,19 +156,18 @@ export default function HomePage() {
     <main className="shell">
       <section className="panel">
         <div className="brand">
-          <div className="brand-mark">W</div>
-          <div><div className="brand-title">Admin Secure Access</div><div className="small">Autentikasi wajah</div></div>
+          <div className="brand-mark">N</div>
+          <div><div className="brand-title">Hotel Natura</div><div className="small">Selamat datang di hotel dengan nuansa alam</div></div>
         </div>
-        <div className="eyebrow">PANEL ADMIN</div>
-        <h1>Masuk dengan wajah</h1>
-        <p className="muted">Gunakan kamera perangkat untuk memverifikasi wajah admin yang sudah terdaftar.</p>
+        <h1>Booking dengan wajah</h1>
+        <p className="muted">Mohon aktifkan kamera Anda.</p>
         <div className="tabs">
           <button className={mode === "login" ? "active" : ""} onClick={() => changeMode("login")}>Login</button>
-          <button className={mode === "enroll" ? "active" : ""} onClick={() => changeMode("enroll")}>Ajukan akses admin</button>
+          <button className={mode === "enroll" ? "active" : ""} onClick={() => changeMode("enroll")}>Daftar</button>
         </div>
         {mode === "enroll" && (
           <div className="field">
-            <p className="muted">Admin utama harus menyetujui permintaan sebelum wajah dapat didaftarkan. Gunakan akun Google dengan email terverifikasi.</p>
+            <p className="muted">Pendaftaran wajah hanya tersedia setelah disetujui admin utama. Bila mengalami kendala hubungi 0812345678910.</p>
           </div>
         )}
         <div className="field">
@@ -186,10 +185,10 @@ export default function HomePage() {
           <button className="button secondary" onClick={stopCamera} disabled={!cameraReady || busy}>Matikan kamera</button>
         </div>
         <button className="button full" onClick={submit} disabled={submitDisabled}>
-          {busy ? "Memproses..." : mode === "enroll" ? approvedToEnroll ? "Daftarkan wajah (disetujui)" : "Masuk Google & ajukan akses" : "Login dengan wajah"}
+          {busy ? "Memproses..." : mode === "enroll" ? approvedToEnroll ? "Daftarkan wajah (disetujui)" : "Daftar dengan Google" : "Login dengan wajah"}
         </button>
         <div className={`notice ${messageType === "error" ? "error" : messageType === "success" ? "success" : ""}`} role="status">{message}</div>
-        <p className="small">Pendaftaran wajah hanya tersedia setelah disetujui admin utama. Pengenalan wajah ini belum memiliki pemeriksaan liveness.</p>
+        <p className="small">Pengenalan wajah ini belum memiliki pemeriksaan liveness.</p>
         <div className="footer">Sesi admin berakhir setelah 20 menit tanpa aktivitas.</div>
       </section>
     </main>
