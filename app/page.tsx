@@ -184,7 +184,7 @@ export default function HomePage() {
           <button className="button secondary" onClick={startCamera} disabled={!modelsReady || busy}>Aktifkan kamera</button>
           <button className="button secondary" onClick={stopCamera} disabled={!cameraReady || busy}>Matikan kamera</button>
         </div>
-        <button className={`button full ${mode === "login" ? "booking-button" : ""}`} onClick={submit} disabled={submitDisabled}>
+        <button className="button full booking-button" onClick={submit} disabled={submitDisabled}>
           {busy ? "Memproses..." : mode === "enroll" ? approvedToEnroll ? "Daftarkan wajah (disetujui)" : "Daftar dengan wajah" : "Booking dengan wajah"}
         </button>
         <div className={`notice ${messageType === "error" ? "error" : messageType === "success" ? "success" : ""}`} role="status">{message}</div>
