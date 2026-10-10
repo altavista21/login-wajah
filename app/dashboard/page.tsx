@@ -5,5 +5,5 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const session = await getAdminSession();
   if (!session) redirect("/");
-  return <DashboardClient primary={session.primary} />;
+  return <DashboardClient />;
 }
