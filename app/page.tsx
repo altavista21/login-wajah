@@ -156,7 +156,7 @@ export default function HomePage() {
     <main className="shell">
       <section className="panel">
         <div className="brand">
-          <div className="brand-mark">N</div>
+          <div className="brand-mark" style={{ background: "#e5f2e8", color: "#247346" }}>N</div>
           <div><div className="brand-title">Hotel Natura</div><div className="small">Selamat datang di hotel dengan nuansa alam</div></div>
         </div>
         <h1>Booking dengan wajah</h1>
@@ -185,7 +185,7 @@ export default function HomePage() {
           <button className="button secondary" onClick={stopCamera} disabled={!cameraReady || busy}>Matikan kamera</button>
         </div>
         <button className="button full" onClick={submit} disabled={submitDisabled}>
-          {busy ? "Memproses..." : mode === "enroll" ? approvedToEnroll ? "Daftarkan wajah (disetujui)" : "Daftar dengan Google" : "Login dengan wajah"}
+          {busy ? "Memproses..." : mode === "enroll" ? approvedToEnroll ? "Daftarkan wajah (disetujui)" : "Daftar dengan Google" : "Booking dengan wajah"}
         </button>
         <div className={`notice ${messageType === "error" ? "error" : messageType === "success" ? "success" : ""}`} role="status">{message}</div>
         <p className="small">Pengenalan wajah ini belum memiliki pemeriksaan liveness.</p>
