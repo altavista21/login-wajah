@@ -188,7 +188,6 @@ export default function HomePage() {
           {busy ? "Memproses..." : mode === "enroll" ? approvedToEnroll ? "Daftarkan wajah (disetujui)" : "Daftar dengan Google" : "Booking dengan wajah"}
         </button>
         <div className={`notice ${messageType === "error" ? "error" : messageType === "success" ? "success" : ""}`} role="status">{message}</div>
-        <p className="small">Pengenalan wajah ini belum memiliki pemeriksaan liveness.</p>
         <div className="footer">Sesi admin berakhir setelah 20 menit tanpa aktivitas.</div>
       </section>
     </main>
