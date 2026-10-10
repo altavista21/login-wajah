@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     if (!session) return NextResponse.json({ error: "Sesi tidak aktif. Silakan login kembali." }, { status: 401 });
     const db = adminDb();
     const snapshot = await db.collection("hotelBookings").orderBy("createdAt", "desc").limit(100).get();
-    const bookings = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+    const bookings = snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as { uid?: string; [key: string]: unknown }) }))
       .filter((item) => session.primary || item.uid === session.uid);
     return NextResponse.json({ bookings });
   } catch (error) {
